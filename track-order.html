@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="general.css">
+    <link rel="stylesheet" href="navbar.css">
+    <title>Track Order</title>
+    <style>
+        .order {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .order-header {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <ul class="topnav">
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="add.html">Add Flowers</a></li>
+        <li><a href="track-order.html">Track Orders</a></li>
+        <li class="right" id="cart-icon">
+            <a href="#">
+                <div class="cart-icon-css"></div>
+                <span id="cart-count">1</span>
+            </a>
+        </li>
+        <li class="right"><a href="login.html">Login</a></li>
+    </ul>
+
+    <h1>Track Your Orders</h1>
+    <div id="ordersContainer">
+        <!-- Orders will be displayed here -->
+    </div>
+
+    <script src="configuration.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html'; // Redirect to login if not logged in
+            } else {
+                fetchOrders();
+            }
+        });
+
+        function fetchOrders() {
+            const url = `${getHost()}/orders`;
+            fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${getTheToken()}`
+                }
+            })
+            .then(response => response.json())
+            .then(orders => {
+                console.log("Orders:", orders); // Log the orders to see what's actually returned
+                displayOrders(orders);
+            })
+            .catch(error => {
+                console.error('Failed to fetch orders:', error);
+            });
+        }
+
+        function displayOrders(orders) {
+            const ordersContainer = document.getElementById('ordersContainer');
+            ordersContainer.innerHTML = ''; // Clear previous entries
+            let orderCount = 1; // Initialize order count
+
+            orders.forEach(order => {
+                fetch(`${getHost()}/flowers/${order.flowerId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${getTheToken()}`
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Flower not found');
+                    }
+                })
+                .then(flower => {
+                    const orderDiv = document.createElement('div');
+                    orderDiv.className = 'order';
+                    orderDiv.innerHTML = `
+                        <div class="order-header">Order ${orderCount++}:</div>
+                        <p>Flower Name: ${flower.name}</p>
+                        <p>Total Cost: $${order.totalCost.toFixed(2)}</p>
+                        <p>Recipient: ${order.recipientName}</p>
+                        <p>Status: ${order.orderStatus}</p>
+                    `;
+                    ordersContainer.appendChild(orderDiv);
+                })
+                .catch(error => console.error('Error fetching flower details:', error));
+            });
+        }
+    </script>
+</body>
+</html>

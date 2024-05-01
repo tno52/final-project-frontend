@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="general.css">
+    <link rel="stylesheet" href="cards.css">
+    <title>Flowers HomePage</title>
+</head>
+<body>
+
+    <ul class="topnav">
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="add.html">Add Flowers</a></li>
+        <li><a href="track-order.html">Track Orders</a></li>
+        <li class="right" id="cart-icon">
+            <a href="#">
+                <div class="cart-icon-css"></div>
+                <span id="cart-count">1</span>
+            </a>
+        </li>
+        <li class="right"><a  href="login.html">Login</a></li>
+    </ul>
+
+    <div class="filters">
+        <select id="flower-type">
+            <option value="">Select Flower Type</option>
+            <option value="mixed">Mixed</option>
+            <option value="roses">Roses</option>
+            <option value="lilies">Lilies</option>
+            <option value="tulips">Tulips</option>
+            <option value="dasies">Daisies</option>
+        </select>
+
+        <select id="occasion">
+            <option value="">Select Occasion</option>
+            <option value="mother's day">Mother's Day</option>
+            <option value="birthday">Birthday</option>
+            <option value="thank you">Thank You</option>
+        </select>
+
+        <select id="color">
+            <option value="">Select Color</option>
+            <option value="mixed">Mixed</option>
+            <option value="red">Red</option>
+            <option value="yellow">Yellow</option>
+            <option value="green">Green</option>
+            <option value="orange">Orange</option>
+        </select>
+
+        <select id="sorting">
+            <option value="">Select Sorting Option</option>
+            <option value="price_low_high">Price: Low to High</option>
+            <option value="price_high_low">Price: High to Low</option>
+        </select>
+
+        <button onclick="fetchFlowers()">Search</button>
+    </div>
+
+  
+        <div id="flower-list" class="cards">
+            <!-- Flowers will be displayed here within card divs -->
+        </div>
+
+
+    <script src="configuration.js"></script>
+    <script>
+        let host = "http://localhost:8080";
+
+        function fetchFlowers() {
+    const description = document.getElementById('flower-type').value;
+    const occasion = document.getElementById('occasion').value;
+    const color = document.getElementById('color').value;
+
+    const url = new URL(`${host}/flowers`);
+    if (description) url.searchParams.append('description', description);
+    if (occasion) url.searchParams.append('occasion', occasion);
+    if (color) url.searchParams.append('color', color);
+
+    console.log(`Fetching flowers with URL: ${url}`); // This will help you see what URL is being requested
+
+    fetch(url)
+        .then(response => response.json())
+        .then(flowers => {
+            if (flowers.length === 0) {
+                console.log("No flowers match the filter criteria");
+            } else {
+                displayFlowers(flowers);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching flowers:', error);
+        });
+}
+
+
+
+
+
+function displayFlowers(flowers) {
+    const flowerList = document.getElementById('flower-list');
+    flowerList.innerHTML = ''; // Clear existing flowers
+
+    flowers.forEach(flower => {
+        const flowerDiv = document.createElement('div');
+        flowerDiv.classList.add('card'); // Using the CSS class for styling
+
+        fetchImage(flower.id).then(imageSrc => {
+            flowerDiv.innerHTML = `
+                <img src="${imageSrc}" alt="${flower.name}" style="width:100%; height:auto; border-radius: 4px;">
+                <div>
+                    <h3>${flower.name}</h3>
+                    <p>${flower.description}</p>
+                    <p>Price: $${flower.cost.toFixed(2)}</p>
+                    <button onclick="selectFlower(${JSON.stringify(flower).split('"').join("&quot;")})">View Details</button>
+                </div>
+            `;
+            flowerList.appendChild(flowerDiv);
+        }).catch(error => {
+            console.error('Error loading image for flower:', error);
+            flowerDiv.innerHTML = `
+                <div style="width:100%; height:100px; background-color: #eee; display: flex; align-items: center; justify-content: center;">
+                    <span>Image not available</span>
+                </div>
+                <h3>${flower.name}</h3>
+                <p>${flower.description}</p>
+                <p>Price: $${flower.cost.toFixed(2)}</p>
+                <button onclick="selectFlower(${JSON.stringify(flower).split('"').join("&quot;")})">View Details</button>
+            `;
+            flowerList.appendChild(flowerDiv);
+        });
+    });
+}
+
+function selectFlower(flower) {
+    localStorage.setItem('selectedFlower', JSON.stringify(flower));
+    window.location.href = 'add.html'; // Redirect to the Add to Basket page
+}
+
+
+
+function fetchImage(flowerId) {
+    return fetch(`${host}/flowers/${flowerId}/image`)
+        .then(response => response.blob())
+        .then(blob => URL.createObjectURL(blob))
+        .catch(error => console.error('Error fetching image:', error));
+}
+
+
+document.addEventListener('DOMContentLoaded', fetchFlowers);
+    </script>
+</body>
+</html>

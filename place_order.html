@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="general.css">
+    <link rel="stylesheet" href="navbar.css">
+    <title>Place Order</title>
+</head>
+<body>
+
+    <ul class="topnav">
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="add.html">Add Flowers</a></li>
+        <li><a href="track-order.html">Track Orders</a></li>
+        <li class="right" id="cart-icon">
+            <a href="#">
+                <div class="cart-icon-css"></div>
+                <span id="cart-count">1</span>
+            </a>
+        </li>
+        <li class="right"><a  href="login.html">Login</a></li>
+    </ul>
+
+    <h1>Place Your Order</h1>
+    <div id="orderDetails" class="order-details">
+        <!-- Flower and order details will be displayed here -->
+    </div>
+    <button onclick="placeOrder()">Place Order</button>
+
+    <script src="configuration.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            displayOrderDetails();
+        });
+        
+        function displayOrderDetails() {
+            const flower = JSON.parse(localStorage.getItem('selectedFlower'));
+            const recipientInfo = JSON.parse(localStorage.getItem('recipientInfo'));
+            if (!flower || !recipientInfo) {
+                alert("No flower or recipient details found!");
+                return;
+            }
+        
+            const host = "http://localhost:8080"; // Correctly defined host
+            updateOrderDetails(flower, recipientInfo);
+        
+            fetchImage(flower.id, host).then(imageSrc => {
+                const imgElement = document.createElement('img');
+                imgElement.src = imageSrc;
+                imgElement.alt = flower.name;
+                imgElement.style = "width:100px;height:100px;";
+                const orderDetailsDiv = document.getElementById('orderDetails');
+                orderDetailsDiv.prepend(imgElement);
+            }).catch(error => {
+                console.error('Error loading image for flower:', error);
+                const imgPlaceholder = document.createElement('div');
+                imgPlaceholder.innerHTML = `<span>Image not available</span>`;
+                imgPlaceholder.style = "width:100px; height:100px; background-color: #eee; display: flex; align-items: center; justify-content: center;";
+                const orderDetailsDiv = document.getElementById('orderDetails');
+                orderDetailsDiv.prepend(imgPlaceholder);
+            });
+        }
+        
+        function fetchImage(flowerId, host) {
+            return fetch(`${host}/flowers/${flowerId}/image`)
+                .then(response => response.blob())
+                .then(blob => URL.createObjectURL(blob))
+                .catch(error => console.error('Error fetching image:', error));
+        }
+        
+        function updateOrderDetails(flower, recipientInfo) {
+            const deliveryFee = 25;
+            const discount = 10;
+            const subtotal = parseFloat(flower.cost);
+            const total = subtotal + deliveryFee - discount;
+        
+            const orderDetailsDiv = document.getElementById('orderDetails');
+            orderDetailsDiv.innerHTML = `
+                <h3>${flower.name} - $${flower.cost.toFixed(2)}</h3>
+                <p>Delivery Date: ${flower.deliveryDate}</p>
+                <p>Recipient: ${recipientInfo.firstName} ${recipientInfo.lastName}</p>
+                <p>Address: ${recipientInfo.address}</p>
+                <p>Subtotal: $${subtotal.toFixed(2)}</p>
+                <p>Delivery Fee: $${deliveryFee.toFixed(2)}</p>
+                <p>Discount for Logging In: -$${discount.toFixed(2)}</p>
+                <p>Total: $${total.toFixed(2)}</p>
+            `;
+            return total; // Return total for use in other functions
+        }
+        
+        function placeOrder() {
+            const flower = JSON.parse(localStorage.getItem('selectedFlower'));
+            const recipientInfo = JSON.parse(localStorage.getItem('recipientInfo'));
+            const total = updateOrderDetails(flower, recipientInfo); // Recalculate total
+        
+            const orderData = {
+                flowerId: flower.id,
+                recipientName: recipientInfo.firstName + " " + recipientInfo.lastName,
+                totalCost: total, // Now properly scoped
+                customerUserName: configuration.token(), // Assuming token contains username
+                orderStatus: 'Submitted'
+            };
+        
+            fetch(`${configuration.host()}/orders`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${configuration.token()}`
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Order placed successfully!');
+                clearCart();
+                window.location.href = 'index.html';
+            })
+            .catch(error => {
+                console.error('Error placing order:', error);
+                alert('Failed to place order.');
+            });
+        }
+        
+        
+        </script>
+        
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="general.css">
+    <link rel="stylesheet" href="navbar.css">
+    <title>Delivery Information</title>
+</head>
+<body>
+    <ul class="topnav">
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="add.html">Add Flowers</a></li>
+        <li><a href="track-order.html">Track Orders</a></li>
+        <li class="right" id="cart-icon">
+            <a href="#">
+                <div class="cart-icon-css"></div>
+                <span id="cart-count">1</span>
+            </a>
+        </li>
+        <li class="right"><a  href="login.html">Login</a></li>
+    </ul>
+
+    <h1>Delivery Information</h1>
+    <div id="formContainer"></div>
+
+    <script src="configuration.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginStatus = isLoggedIn();
+            const formContainer = document.getElementById('formContainer');
+
+            formContainer.innerHTML = `
+                <form id="deliveryForm">
+                    <input type="text" id="firstName" placeholder="First Name" required>
+                    <input type="text" id="lastName" placeholder="Last Name" required>
+                    <input type="text" id="address" placeholder="Address" required>
+                    ${loginStatus ? '<button type="submit">Continue</button>' : ''}
+                </form>
+            `;
+
+            if (!loginStatus) {
+                formContainer.innerHTML += `
+                    <div>
+                        <button id="loginButton">Login</button>
+                        <button id="signupButton">Sign Up</button>
+                    </div>
+                `;
+                document.getElementById('loginButton').addEventListener('click', () => saveFormData());
+                document.getElementById('signupButton').addEventListener('click', () => saveFormData());
+            }
+
+            document.getElementById('deliveryForm').addEventListener('submit', handleFormSubmit);
+        });
+
+        function saveFormData() {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const address = document.getElementById('address').value;
+            if (firstName && lastName && address) {
+                localStorage.setItem('recipientInfo', JSON.stringify({ firstName, lastName, address }));
+                window.location.href = 'login.html'; // Redirect to the login page
+            } else {
+                alert('Please fill out all fields before proceeding.');
+            }
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            saveFormData();
+            if (isLoggedIn()) {
+                window.location.href = 'place_order.html'; // Redirect to place order page for logged in users
+            } else {
+                window.location.href = 'login.html'; // Redirect to login for not logged in users
+            }
+        }
+    </script>
+</body>
+</html>

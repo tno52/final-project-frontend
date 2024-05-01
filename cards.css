@@ -1,0 +1,28 @@
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-auto-rows: auto;
+    grid-gap: 1rem;
+    justify-content: center; /* Center the grid items in the grid container */
+    padding: 1rem; /* Optional: Adds some padding around the grid */
+  }
+  
+  .card {
+    border: 2px solid #e7e7e7;
+    border-radius: 4px;
+    padding: 0.5rem;
+    box-shadow: 0 10px 8px 0 rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+  }
+  
+  .card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Optional: Center the entire .cards container if it has a fixed width or within its parent */
+  .container { /* Assuming .cards is inside a div with class .container */
+    display: flex;
+    justify-content: center; /* Horizontally centers the child elements (the .cards grid) */
+    align-items: center; /* Vertically centers the child elements, if needed */
+  }
+  

@@ -1,0 +1,73 @@
+ul.topnav {
+    list-style-type: none;
+    margin-top: 1%;
+    margin-bottom: 5%;
+    padding: 0;
+    overflow: hidden;
+    background-color: #ce6d47;
+}
+
+ul.topnav li {float: left;}
+
+ul.topnav li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+ul.topnav li a:hover:not(.active) {background-color: #f8ebcb;}
+
+ul.topnav li a.active {background-color: #af412a;}
+
+ul.topnav li.right {float: right;}
+
+.cart-icon-css {
+    display: inline-block;
+    width: 24px;
+    height: 15px;
+    border-top: 2px solid white;
+    border-right: 2px solid white;
+    border-left: 2px solid white;
+    position: relative;
+}
+
+.cart-icon-css::before, .cart-icon-css::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 4px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -4px;
+}
+
+.cart-icon-css::before {
+    left: 4px;
+}
+
+.cart-icon-css::after {
+    right: 4px;
+}
+
+#cart-count {
+    background-color: red;
+    color: white;
+    font-size: 12px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    position: absolute;
+    top: 35px;  /* Adjusted to align correctly with cart icon */
+    right: 50px;  /* Adjusted to align correctly with cart icon */
+    display: block;/* Change to 'block' to always show for testing */
+}
+
+@media screen and (max-width: 600px) {
+    ul.topnav li.right, 
+    ul.topnav li {float: none;}
+}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="general.css">
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="cards.css">
+    <title>Add to Basket</title>
+</head>
+<body>
+
+    <ul class="topnav">
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="add.html">Add Flowers</a></li>
+        <li><a href="track-order.html">Track Orders</a></li>
+        <li class="right" id="cart-icon">
+            <a href="#">
+                <div class="cart-icon-css"></div>
+                <span id="cart-count">1</span>
+            </a>
+        </li>
+        <li class="right"><a  href="login.html">Login</a></li>
+    </ul>
+
+
+    <h1>Add to Basket</h1>
+    <div id="flower-details" class="cards">
+        <!-- Flowers will be displayed here within card divs -->
+    </div>
+    <label for="delivery-date">Delivery Date:</label>
+    <input type="date" id="delivery-date" required>
+    <button onclick="addToBasket()">Add to Basket</button>
+
+    <script src="configuration.js"></script>
+    <script>
+
+            let host = "http://localhost:8080";
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            displayFlower();
+        });
+
+        function displayFlower() {
+    const flowerDetails = JSON.parse(localStorage.getItem('selectedFlower'));
+    console.log("Retrieved flower details:", flowerDetails);  // Check what you retrieve
+    if (!flowerDetails) {
+        console.error('No selected flower data found in local storage');
+        return;
+    }
+
+    const flowerDetailsDiv = document.getElementById('flower-details'); // Ensure this matches the ID in the HTML
+    flowerDetailsDiv.innerHTML = ''; // Clear existing content
+
+    const flowerDiv = document.createElement('div');
+    flowerDiv.classList.add('card'); // Using the CSS class for styling
+
+    fetchImage(flowerDetails.id).then(imageSrc => {
+        flowerDiv.innerHTML = `
+            <img src="${imageSrc}" alt="${flowerDetails.name}" style="width:100%; height:auto; border-radius: 4px;">
+            <div>
+                <h3>${flowerDetails.name}</h3>
+                <p>${flowerDetails.description}</p>
+                <p>Price: $${flowerDetails.cost.toFixed(2)}</p>
+            </div>
+        `;
+        flowerDetailsDiv.appendChild(flowerDiv); // Append to the correct div
+    }).catch(error => {
+        console.error('Error loading image for flower:', error);
+        flowerDiv.innerHTML = `
+            <div style="width:100%; height:100px; background-color: #eee; display: flex; align-items: center; justify-content: center;">
+                <span>Image not available</span>
+            </div>
+            <div>
+                <h3>${flowerDetails.name}</h3>
+                <p>${flowerDetails.description}</p>
+                <p>Price: $${flowerDetails.cost.toFixed(2)}</p>
+            </div>
+        `;
+        flowerDetailsDiv.appendChild(flowerDiv); // Append to the correct div even in case of error
+    });
+}
+
+       
+
+
+        function fetchImage(flowerId) {
+    return fetch(`${host}/flowers/${flowerId}/image`)
+        .then(response => response.blob())
+        .then(blob => URL.createObjectURL(blob))
+        .catch(error => console.error('Error fetching image:', error));
+}
+
+function addToBasket() {
+    const deliveryDate = document.getElementById('delivery-date').value;
+    if (!deliveryDate) {
+        alert("Please select a delivery date.");
+        return;
+    }
+    const flower = JSON.parse(localStorage.getItem('selectedFlower'));
+    flower.deliveryDate = deliveryDate;
+    localStorage.setItem('selectedFlower', JSON.stringify(flower));
+    localStorage.setItem('cartItem', JSON.stringify(flower));  // Ensure this is correct
+    alert('Added to basket!');
+    updateCartIcon();
+    window.location.href = 'delivery_info.html';  // Navigate as needed
+}
+
+
+
+    </script>
+</body>
+</html>
